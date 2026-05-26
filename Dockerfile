@@ -4,7 +4,8 @@ RUN install_packages \
     libopencv-dev \
     libgl1-mesa-glx \
     libglib2.0-0 \
-    python3-pip
+    python3-pip \
+    build-essential
 
 WORKDIR /app
 
