@@ -5,15 +5,12 @@ RUN install_packages \
     libgl1-mesa-glx \
     libglib2.0-0 \
     python3-pip \
-    build-essential \
-    libcap-dev
+    python3-picamera2
 
 WORKDIR /app
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
-RUN pip install --no-cache-dir --no-build-isolation picamera2
 
 COPY src/ src/
 
