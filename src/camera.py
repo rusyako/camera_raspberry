@@ -20,19 +20,23 @@ class Camera:
                 self.mode = "picamera2"
                 print("[CAM] picamera2 mode")
                 return
-            except Exception:
+            except Exception as e:
                 if env_mode == "picamera2":
-                    print("[WARN] picamera2 failed, fallback to opencv")
+                    print(f"[WARN] picamera2 failed: {e}")
 
-        self.cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
-        self.cap.set(cv2.CAP_PROP_FPS, 20)
-        if not self.cap.isOpened():
-            self.cap = cv2.VideoCapture(0)
-            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
-            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
-        print("[CAM] opencv mode")
+        for dev in ("/dev/video0", "/dev/video1", 0):
+            self.cap = cv2.VideoCapture(dev, cv2.CAP_V4L2)
+            self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'YUYV'))
+            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+            self.cap.set(cv2.CAP_PROP_FPS, 30)
+            if self.cap.isOpened():
+                w = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+                h = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+                print(f"[CAM] opencv mode ({dev} {int(w)}x{int(h)})")
+                return
+
+        print("[WARN] no camera device found")
 
     def read(self):
         if self.mode == "picamera2":
