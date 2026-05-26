@@ -2,8 +2,7 @@ services:
   camera:
     build:
       context: .
-      args:
-        USE_PICAMERA: "true"
+      target: pi
     container_name: camera_app
     privileged: true
     ports:

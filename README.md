@@ -41,7 +41,7 @@ Uses webcam by default (`CAMERA_MODE=opencv`).
 
 ```bash
 git clone https://github.com/rusyako/camera_raspberry.git && cd camera_raspberry
-docker-compose build --build-arg USE_PICAMERA=true
+docker-compose build
 ```
 
 ### 2. Run
