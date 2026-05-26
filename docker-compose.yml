@@ -1,12 +1,17 @@
 services:
   camera:
-    build: .
+    build:
+      context: .
+      args:
+        USE_PICAMERA: "true"
     container_name: camera_app
     privileged: true
     ports:
       - "5000:5000"
     volumes:
       - ./recordings:/app/recordings
+    environment:
+      - CAMERA_MODE=picamera2
     devices:
       - /dev/video0:/dev/video0
       - /dev/media0:/dev/media0
