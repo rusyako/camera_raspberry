@@ -64,8 +64,12 @@ def main():
     except KeyboardInterrupt:
         print("Shutting down...")
     finally:
-        camera.release()
+        try:
+            camera.release()
+        except Exception:
+            pass
         recorder.release()
+        cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
