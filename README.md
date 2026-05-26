@@ -41,13 +41,13 @@ Uses webcam by default (`CAMERA_MODE=opencv`).
 
 ```bash
 git clone https://github.com/rusyako/camera_raspberry.git && cd camera_raspberry
-docker compose build --build-arg USE_PICAMERA=true
+docker-compose build --build-arg USE_PICAMERA=true
 ```
 
 ### 2. Run
 
 ```bash
-docker compose up -d
+docker-compose up -d
 ```
 
 ### 3. Open browser
@@ -68,5 +68,5 @@ sudo systemctl start camera.service
 ### 5. Check logs
 
 ```bash
-docker compose logs -f
+docker-compose logs -f
 ```
