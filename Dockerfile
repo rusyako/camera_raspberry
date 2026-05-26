@@ -9,7 +9,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 RUN if [ "$USE_PICAMERA" = "true" ]; then \
-        apt-get update && apt-get install -y --no-install-recommends libcap-dev \
+        apt-get update && apt-get install -y --no-install-recommends \
+            build-essential \
+            libcap-dev \
+            python3-dev \
         && rm -rf /var/lib/apt/lists/*; \
     fi
 
