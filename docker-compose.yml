@@ -1,0 +1,17 @@
+services:
+  camera:
+    build: .
+    container_name: camera_app
+    privileged: true
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./recordings:/app/recordings
+    devices:
+      - /dev/video0:/dev/video0
+      - /dev/media0:/dev/media0
+      - /dev/media1:/dev/media1
+      - /dev/dri:/dev/dri
+      - /dev/dma_heap:/dev/dma_heap
+      - /dev/vchiq:/dev/vchiq
+    restart: unless-stopped
