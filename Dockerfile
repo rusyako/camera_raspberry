@@ -5,7 +5,8 @@ RUN install_packages \
     libgl1-mesa-glx \
     libglib2.0-0 \
     python3-pip \
-    build-essential
+    build-essential \
+    libcap-dev
 
 WORKDIR /app
 
