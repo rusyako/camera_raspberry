@@ -13,7 +13,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install --no-cache-dir "setuptools<72" \
+RUN sed -i "s/'install_layout'/'install_platlib'/" \
+    /usr/lib/python3/dist-packages/setuptools/command/install_lib.py \
     && pip install --no-cache-dir --no-build-isolation picamera2
 
 COPY src/ src/
