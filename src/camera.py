@@ -1,12 +1,10 @@
-import os
 import cv2
-import numpy as np
 from .config import FRAME_WIDTH, FRAME_HEIGHT
 
 class Camera:
     def __init__(self):
-        self.mode = os.environ.get("CAMERA_MODE", "opencv")
-        if self.mode == "picamera2":
+        self.mode = "opencv"
+        try:
             from picamera2 import Picamera2
             self.picam2 = Picamera2()
             config = self.picam2.create_video_configuration(
@@ -14,7 +12,8 @@ class Camera:
             )
             self.picam2.configure(config)
             self.picam2.start()
-        else:
+            self.mode = "picamera2"
+        except Exception:
             self.cap = cv2.VideoCapture(0)
             self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
             self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
