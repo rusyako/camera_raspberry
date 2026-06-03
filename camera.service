@@ -3,19 +3,19 @@ Description=Camera Surveillance App
 After=network-online.target local-fs.target usb.target
 Wants=network-online.target
 RequiresMountsFor=/mnt/usb
+StartLimitIntervalSec=30
+StartLimitBurst=3
 
 [Service]
 Type=simple
-WorkingDirectory=/home/backupadmin/camera_raspberry
+WorkingDirectory=/home/admin/camera_raspberry
 ExecStartPre=/bin/mkdir -p /mnt/usb/recordings
 ExecStart=/usr/bin/python3 -m src.main
 Restart=always
 RestartSec=10
-StartLimitIntervalSec=30
-StartLimitBurst=3
 StandardOutput=journal
 StandardError=journal
-User=backupadmin
+User=admin
 
 [Install]
 WantedBy=multi-user.target
