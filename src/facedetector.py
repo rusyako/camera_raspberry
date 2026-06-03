@@ -4,9 +4,19 @@ import os
 
 class FaceDetector:
     def __init__(self, scale_factor=1.1, min_neighbors=5, min_size=(60, 60)):
-        cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-        if not os.path.exists(cascade_path):
-            raise FileNotFoundError(f"Cascade file not found: {cascade_path}")
+        cascade_file = "haarcascade_frontalface_default.xml"
+        paths = [
+            os.path.join(os.path.dirname(cv2.__file__), "data", cascade_file),
+            "/usr/share/opencv4/haarcascades/" + cascade_file,
+            "/usr/local/share/opencv4/haarcascades/" + cascade_file,
+        ]
+        cascade_path = None
+        for p in paths:
+            if os.path.exists(p):
+                cascade_path = p
+                break
+        if cascade_path is None:
+            raise FileNotFoundError(f"Cascade file {cascade_file} not found")
         self.cascade = cv2.CascadeClassifier(cascade_path)
         self.scale_factor = scale_factor
         self.min_neighbors = min_neighbors
