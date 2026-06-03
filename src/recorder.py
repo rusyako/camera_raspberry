@@ -6,7 +6,10 @@ import shutil
 import threading
 from collections import deque
 from datetime import datetime, timedelta
-from .config import RECORDINGS_DIR, MOTION_TIMEOUT, FRAME_WIDTH, FRAME_HEIGHT, FPS, DISK_MIN_FREE_MB, RECORD_MAX_DAYS, PREBUFFER_SECS
+from .config import (RECORDINGS_DIR, FACE_TIMEOUT, MOTION_TIMEOUT_NOFACE,
+                     FACE_MAX_DURATION, MOTION_MAX_DURATION,
+                     FRAME_WIDTH, FRAME_HEIGHT, FPS, DISK_MIN_FREE_MB,
+                     RECORD_MAX_DAYS, PREBUFFER_SECS)
 
 
 class Recorder:
@@ -14,6 +17,9 @@ class Recorder:
         self.writer = None
         self.recording = False
         self.last_motion_time = 0
+        self.last_face_time = 0
+        self.recording_start_time = 0
+        self._face_mode = False
         self.lock = threading.Lock()
         self._base_ts = ""
         self._segment = 0
@@ -56,11 +62,22 @@ class Recorder:
             if not self.recording:
                 self._start_recording()
 
+    def signal_face(self):
+        with self.lock:
+            if self.recording:
+                self.last_face_time = time.time()
+                if not self._face_mode:
+                    self._face_mode = True
+                    print("[REC] Face detected — extended to 1-5 min")
+
     def _start_recording(self):
         self._cleanup_old()
         self._base_ts = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         self._segment = 1
         self._frame_in_segment = 0
+        self.recording_start_time = time.time()
+        self.last_face_time = 0
+        self._face_mode = False
         self._open_writer()
         buf_count = len(self.prebuffer)
         for f in self.prebuffer:
@@ -91,8 +108,21 @@ class Recorder:
 
     def check_timeout(self):
         with self.lock:
-            if self.recording and (time.time() - self.last_motion_time) > MOTION_TIMEOUT:
-                self._stop_recording()
+            if not self.recording:
+                return
+            elapsed = time.time() - self.recording_start_time
+            if self._face_mode:
+                if elapsed > FACE_MAX_DURATION:
+                    print("[REC] Max face duration reached")
+                    self._stop_recording()
+                elif time.time() - self.last_face_time > FACE_TIMEOUT:
+                    self._stop_recording()
+            else:
+                if elapsed > MOTION_MAX_DURATION:
+                    print("[REC] Max motion duration reached")
+                    self._stop_recording()
+                elif time.time() - self.last_motion_time > MOTION_TIMEOUT_NOFACE:
+                    self._stop_recording()
 
     def _close_writer(self):
         if self.writer:

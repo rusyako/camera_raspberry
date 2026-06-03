@@ -15,6 +15,7 @@ _status = {
     "recording": False,
     "usb_connected": False,
     "last_motion": 0,
+    "face_mode": False,
     "free_mb": 0,
     "fps": 20,
     "face_count": 0,

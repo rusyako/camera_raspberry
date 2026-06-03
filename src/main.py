@@ -75,6 +75,8 @@ def main():
                     if frame_counter % FACE_DETECT_EVERY_N == 0:
                         last_faces = face_detector.detect(frame)
                     face_detector.draw(frame, last_faces)
+                    if last_faces:
+                        recorder.signal_face()
                 elif recorder.recording:
                     pass
                 else:
@@ -97,6 +99,7 @@ def main():
                 recording=recorder.recording,
                 usb_connected=usb_ok,
                 last_motion=recorder.last_motion_time if recorder.recording else 0,
+                face_mode=recorder._face_mode,
                 free_mb=free_mb,
                 fps=current_fps,
                 face_count=len(last_faces),
