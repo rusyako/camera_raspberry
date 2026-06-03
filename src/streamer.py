@@ -17,6 +17,7 @@ _status = {
     "last_motion": 0,
     "free_mb": 0,
     "fps": 20,
+    "face_count": 0,
 }
 status_lock = threading.Lock()
 
