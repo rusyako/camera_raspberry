@@ -82,5 +82,9 @@ class Recorder:
         self.recording = False
         print("[REC] Stopped")
 
+    def abort(self):
+        with self.lock:
+            self._stop_recording()
+
     def release(self):
         self._stop_recording()

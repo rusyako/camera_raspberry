@@ -6,7 +6,8 @@ from .camera import Camera
 from .detector import MotionDetector
 from .recorder import Recorder
 from .streamer import set_frame, run_server
-from .config import FLASK_HOST, FLASK_PORT, FRAME_WIDTH, FRAME_HEIGHT, FPS
+from .usbwatcher import USBWatcher
+from .config import FLASK_HOST, FLASK_PORT, FRAME_WIDTH, FRAME_HEIGHT, FPS, USB_CHECK_INTERVAL
 
 
 def _placeholder_frame():
@@ -21,6 +22,8 @@ def main():
     camera = Camera()
     detector = MotionDetector()
     recorder = Recorder()
+    usb = USBWatcher(mount_point="/mnt/usb", check_interval=USB_CHECK_INTERVAL)
+    usb.start()
     camera_ok = True
 
     server_thread = threading.Thread(
@@ -31,6 +34,7 @@ def main():
     server_thread.start()
 
     print(f"Server running at http://0.0.0.0:{FLASK_PORT}")
+    print(f"[USB] Check every {USB_CHECK_INTERVAL}s")
 
     try:
         while True:
@@ -50,13 +54,16 @@ def main():
 
             frame = cv2.resize(frame, (FRAME_WIDTH, FRAME_HEIGHT))
 
-            motion = detector.detect(frame)
-
-            if motion:
-                recorder.signal_motion()
-
-            recorder.write_frame(frame)
-            recorder.check_timeout()
+            if usb.is_available():
+                motion = detector.detect(frame)
+                if motion:
+                    recorder.signal_motion()
+                recorder.write_frame(frame)
+                recorder.check_timeout()
+            else:
+                if recorder.recording:
+                    recorder.abort()
+                    print("[USB] Recording stopped — device removed")
 
             set_frame(frame)
 
@@ -69,6 +76,7 @@ def main():
         except Exception:
             pass
         recorder.release()
+        usb.stop()
         cv2.destroyAllWindows()
 
 
