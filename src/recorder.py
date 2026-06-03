@@ -4,8 +4,9 @@ import time
 import glob
 import shutil
 import threading
-from datetime import datetime
-from .config import RECORDINGS_DIR, MOTION_TIMEOUT, FRAME_WIDTH, FRAME_HEIGHT, FPS, DISK_MIN_FREE_MB
+from collections import deque
+from datetime import datetime, timedelta
+from .config import RECORDINGS_DIR, MOTION_TIMEOUT, FRAME_WIDTH, FRAME_HEIGHT, FPS, DISK_MIN_FREE_MB, RECORD_MAX_DAYS, PREBUFFER_SECS
 
 
 class Recorder:
@@ -18,11 +19,24 @@ class Recorder:
         self._segment = 0
         self._frame_in_segment = 0
         self.SEGMENT_FRAMES = FPS * 30
+        self.prebuffer = deque(maxlen=FPS * PREBUFFER_SECS)
 
     def _get_filename(self, seg):
         return f"{RECORDINGS_DIR}/{self._base_ts}_{seg:03d}.mp4"
 
     def _cleanup_old(self):
+        self._cleanup_by_age()
+        self._cleanup_by_space()
+
+    def _cleanup_by_age(self):
+        cutoff = time.time() - RECORD_MAX_DAYS * 86400
+        files = sorted(glob.glob(os.path.join(RECORDINGS_DIR, "*.mp4")), key=os.path.getmtime)
+        for f in files:
+            if os.path.getmtime(f) < cutoff:
+                os.remove(f)
+                print(f"[REC] Expired: {os.path.basename(f)}")
+
+    def _cleanup_by_space(self):
         free_mb = shutil.disk_usage(RECORDINGS_DIR).free / (1024 * 1024)
         while free_mb < DISK_MIN_FREE_MB:
             files = sorted(glob.glob(os.path.join(RECORDINGS_DIR, "*.mp4")), key=os.path.getmtime)
@@ -31,6 +45,10 @@ class Recorder:
             os.remove(files[0])
             print(f"[REC] Cleaned: {os.path.basename(files[0])}")
             free_mb = shutil.disk_usage(RECORDINGS_DIR).free / (1024 * 1024)
+
+    def feed_buffer(self, frame):
+        with self.lock:
+            self.prebuffer.append(frame.copy())
 
     def signal_motion(self):
         with self.lock:
@@ -44,14 +62,18 @@ class Recorder:
         self._segment = 1
         self._frame_in_segment = 0
         self._open_writer()
+        for f in self.prebuffer:
+            self.writer.write(f)
+        self.prebuffer.clear()
+        print(f"[REC] Pre-buffer flushed {self._frame_in_segment} frames")
 
     def _open_writer(self):
         filename = self._get_filename(self._segment)
-        fourcc = cv2.VideoWriter_fourcc(*'avc1')
-        self.writer = cv2.VideoWriter(filename, fourcc, FPS, (FRAME_WIDTH, FRAME_HEIGHT))
-        if not self.writer.isOpened():
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        for codec in ('H264', 'avc1', 'mp4v'):
+            fourcc = cv2.VideoWriter_fourcc(*codec)
             self.writer = cv2.VideoWriter(filename, fourcc, FPS, (FRAME_WIDTH, FRAME_HEIGHT))
+            if self.writer.isOpened():
+                break
         self.recording = True
         print(f"[REC] Started: {filename}")
 
