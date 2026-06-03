@@ -62,10 +62,11 @@ class Recorder:
         self._segment = 1
         self._frame_in_segment = 0
         self._open_writer()
+        buf_count = len(self.prebuffer)
         for f in self.prebuffer:
             self.writer.write(f)
         self.prebuffer.clear()
-        print(f"[REC] Pre-buffer flushed {self._frame_in_segment} frames")
+        print(f"[REC] Pre-buffer flushed {buf_count} frames")
 
     def _open_writer(self):
         filename = self._get_filename(self._segment)
