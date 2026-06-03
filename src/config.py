@@ -4,7 +4,7 @@ RECORDINGS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__
 os.makedirs(RECORDINGS_DIR, exist_ok=True)
 
 MOTION_THRESHOLD = 5000
-MOTION_TIMEOUT = 10
+MOTION_TIMEOUT = 20
 FLASK_PORT = 5000
 FLASK_HOST = "0.0.0.0"
 FRAME_WIDTH = 1024

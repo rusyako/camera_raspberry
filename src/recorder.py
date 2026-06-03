@@ -17,7 +17,7 @@ class Recorder:
         self._base_ts = ""
         self._segment = 0
         self._frame_in_segment = 0
-        self.SEGMENT_FRAMES = FPS * 10
+        self.SEGMENT_FRAMES = FPS * 30
 
     def _get_filename(self, seg):
         return f"{RECORDINGS_DIR}/{self._base_ts}_{seg:03d}.mp4"
