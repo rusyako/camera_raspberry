@@ -139,6 +139,14 @@ sudo systemctl status camera.service
 journalctl -u camera.service -f
 ```
 
+По умолчанию bare-metal service пишет во внутреннюю папку SD-карты:
+
+```bash
+/home/admin/camera_raspberry/recordings_internal
+```
+
+Флешка при этом не обязательна: стрим и запись по движению работают без USB.
+
 ## 9.1. Автоподключение USB и restart сервиса
 
 Если флешка вставляется уже после запуска камеры, можно поставить udev hook. Он реагирует на флешку с label `CAMERA_USB`, монтирует её в `/mnt/usb`, создаёт `/mnt/usb/recordings` и перезапускает `camera.service`.
@@ -245,4 +253,4 @@ sudo systemctl enable --now camera.service
 | Логи (все) | `journalctl -u camera.service --no-pager` |
 | Перезапустить сервис | `sudo systemctl restart camera.service` |
 | Остановить сервис | `sudo systemctl stop camera.service` |
-| Просмотр записей | `ls -la ~/camera_raspberry/recordings/` |
+| Просмотр записей | `ls -la ~/camera_raspberry/recordings_internal/` |

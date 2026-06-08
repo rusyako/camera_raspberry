@@ -1,6 +1,7 @@
 import os
 
-RECORDINGS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "recordings")
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RECORDINGS_DIR = os.environ.get("RECORDINGS_DIR", os.path.join(PROJECT_ROOT, "recordings"))
 
 MOTION_THRESHOLD = 5000
 FACE_TIMEOUT = 60

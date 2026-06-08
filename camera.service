@@ -8,6 +8,7 @@ StartLimitBurst=3
 [Service]
 Type=simple
 WorkingDirectory=/home/admin/camera_raspberry
+Environment=RECORDINGS_DIR=/home/admin/camera_raspberry/recordings_internal
 ExecStart=/usr/bin/python3 -m src.main
 Restart=always
 RestartSec=10

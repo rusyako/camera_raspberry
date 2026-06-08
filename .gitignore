@@ -9,3 +9,4 @@ dist/
 build/
 recordings/*
 !recordings/.gitkeep
+recordings_internal/*

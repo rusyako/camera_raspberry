@@ -1,4 +1,5 @@
 import cv2
+import os
 import signal
 import time
 import shutil
@@ -11,8 +12,16 @@ from .recorder import Recorder
 from .streamer import set_frame, set_status, run_server
 from .usbwatcher import USBWatcher
 from .config import (FLASK_HOST, FLASK_PORT, FRAME_WIDTH, FRAME_HEIGHT,
-                     FPS, FPS_ACTIVE, FPS_IDLE, USB_CHECK_INTERVAL,
-                     RECORDINGS_DIR, DISK_MIN_FREE_MB, FACE_DETECT_EVERY_N)
+                      FPS, FPS_ACTIVE, FPS_IDLE, USB_CHECK_INTERVAL,
+                      RECORDINGS_DIR, DISK_MIN_FREE_MB, FACE_DETECT_EVERY_N)
+
+
+def _storage_available():
+    try:
+        os.makedirs(RECORDINGS_DIR, exist_ok=True)
+        return os.path.isdir(RECORDINGS_DIR) and os.access(RECORDINGS_DIR, os.W_OK)
+    except Exception:
+        return False
 
 
 def _placeholder_frame():
@@ -107,8 +116,9 @@ def main():
             recorder.feed_buffer(frame)
 
             usb_ok = usb.is_available()
+            storage_ok = _storage_available()
 
-            if usb_ok:
+            if storage_ok:
                 motion = detector.detect(frame)
                 if motion:
                     recorder.signal_motion()
