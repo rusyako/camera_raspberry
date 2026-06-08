@@ -1,4 +1,5 @@
 import cv2
+import signal
 import time
 import shutil
 import threading
@@ -23,6 +24,14 @@ def _placeholder_frame():
 
 
 def main():
+    stop_event = threading.Event()
+
+    def request_stop(signum, frame):
+        stop_event.set()
+
+    signal.signal(signal.SIGTERM, request_stop)
+    signal.signal(signal.SIGINT, request_stop)
+
     camera = Camera()
     detector = MotionDetector()
     face_detector = FaceDetector()
@@ -45,7 +54,7 @@ def main():
     print(f"[USB] Check every {USB_CHECK_INTERVAL}s")
 
     try:
-        while True:
+        while not stop_event.is_set():
             ret, frame = camera.read()
             if not ret:
                 if camera_ok:
@@ -53,6 +62,20 @@ def main():
                     camera_ok = False
                 frame = _placeholder_frame()
                 set_frame(frame)
+                usb_ok = usb.is_available()
+                try:
+                    free_mb = shutil.disk_usage(RECORDINGS_DIR).free // (1024 * 1024)
+                except Exception:
+                    free_mb = -1
+                set_status(
+                    recording=recorder.recording,
+                    usb_connected=usb_ok,
+                    last_motion=0,
+                    face_mode=False,
+                    free_mb=free_mb,
+                    fps=FPS_IDLE,
+                    face_count=0,
+                )
                 time.sleep(1.0 / FPS)
                 continue
 
