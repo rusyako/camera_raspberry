@@ -40,13 +40,24 @@ class Camera:
 
     def read(self):
         if self.mode == "picamera2":
-            frame = self.picam2.capture_array()
-            return True, frame
+            try:
+                frame = self.picam2.capture_array()
+                return True, frame
+            except Exception as e:
+                print(f"[WARN] picamera2 read failed: {e}")
+                return False, None
         else:
             return self.cap.read()
 
     def release(self):
         if self.mode == "picamera2":
-            self.picam2.stop()
+            try:
+                self.picam2.stop()
+            except Exception:
+                pass
+            try:
+                self.picam2.close()
+            except Exception:
+                pass
         else:
             self.cap.release()

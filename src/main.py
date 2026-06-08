@@ -53,6 +53,25 @@ def main():
     print(f"Server running at http://0.0.0.0:{FLASK_PORT}")
     print(f"[USB] Check every {USB_CHECK_INTERVAL}s")
 
+    def status_loop():
+        while not stop_event.is_set():
+            try:
+                free_mb = shutil.disk_usage(RECORDINGS_DIR).free // (1024 * 1024)
+            except Exception:
+                free_mb = -1
+            set_status(
+                recording=recorder.recording,
+                usb_connected=usb.is_available(),
+                last_motion=recorder.last_motion_time if recorder.recording else 0,
+                face_mode=recorder._face_mode,
+                free_mb=free_mb,
+                fps=current_fps,
+                face_count=len(last_faces),
+            )
+            time.sleep(2)
+
+    threading.Thread(target=status_loop, daemon=True).start()
+
     try:
         while not stop_event.is_set():
             ret, frame = camera.read()
