@@ -1,0 +1,7 @@
+[Unit]
+Description=Mount camera USB drive and restart camera service
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/admin/camera_raspberry/scripts/camera_usb_plug.sh

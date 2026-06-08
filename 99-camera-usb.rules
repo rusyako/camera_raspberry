@@ -1,0 +1,2 @@
+ACTION=="add", SUBSYSTEM=="block", ENV{ID_FS_LABEL}=="CAMERA_USB", TAG+="systemd", ENV{SYSTEMD_WANTS}+="camera-usb-plug.service"
+ACTION=="change", SUBSYSTEM=="block", ENV{ID_FS_LABEL}=="CAMERA_USB", TAG+="systemd", ENV{SYSTEMD_WANTS}+="camera-usb-plug.service"

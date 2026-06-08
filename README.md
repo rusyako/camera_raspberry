@@ -139,6 +139,28 @@ sudo systemctl status camera.service
 journalctl -u camera.service -f
 ```
 
+## 9.1. Автоподключение USB и restart сервиса
+
+Если флешка вставляется уже после запуска камеры, можно поставить udev hook. Он реагирует на флешку с label `CAMERA_USB`, монтирует её в `/mnt/usb`, создаёт `/mnt/usb/recordings` и перезапускает `camera.service`.
+
+```bash
+cd ~/camera_raspberry
+chmod +x scripts/camera_usb_plug.sh
+sudo cp camera-usb-plug.service /etc/systemd/system/
+sudo cp 99-camera-usb.rules /etc/udev/rules.d/
+sudo systemctl daemon-reload
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+
+Проверка:
+
+```bash
+sudo systemctl status camera-usb-plug.service
+journalctl -u camera-usb-plug.service --no-pager -n 30
+curl http://127.0.0.1:5000/api/status
+```
+
 ## 10. Проверка после перезагрузки
 
 ```bash
