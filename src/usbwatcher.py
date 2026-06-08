@@ -13,21 +13,12 @@ class USBWatcher:
         self._thread = None
 
     def _scan_usb(self):
-        if os.path.ismount(self.mount_point):
-            return True
-        try:
-            for entry in os.listdir("/dev/disk/by-id"):
-                if "usb" in entry.lower():
-                    return True
-        except Exception:
-            pass
-        try:
-            for entry in os.listdir("/dev/disk/by-path"):
-                if "usb" in entry.lower():
-                    return True
-        except Exception:
-            pass
-        return False
+        recordings_dir = os.path.join(self.mount_point, "recordings")
+        return (
+            os.path.ismount(self.mount_point)
+            and os.path.isdir(recordings_dir)
+            and os.access(recordings_dir, os.W_OK)
+        )
 
     def _run(self):
         while not self._stop:
