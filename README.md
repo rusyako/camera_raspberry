@@ -161,6 +161,16 @@ journalctl -u camera-usb-plug.service --no-pager -n 30
 curl http://127.0.0.1:5000/api/status
 ```
 
+Если после резкого извлечения флешки появляется `Input/output error`, останови сервис, размонтируй флешку, переподключи её и дай udev смонтировать заново:
+
+```bash
+sudo systemctl stop camera.service
+sudo umount -l /mnt/usb || true
+# вытащить и вставить флешку
+sleep 15
+curl http://127.0.0.1:5000/api/status
+```
+
 ## 10. Проверка после перезагрузки
 
 ```bash
