@@ -1,7 +1,6 @@
 import os
 
 RECORDINGS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "recordings")
-os.makedirs(RECORDINGS_DIR, exist_ok=True)
 
 MOTION_THRESHOLD = 5000
 FACE_TIMEOUT = 60
