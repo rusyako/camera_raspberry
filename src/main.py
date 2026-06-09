@@ -7,13 +7,12 @@ import threading
 import numpy as np
 from .camera import Camera
 from .detector import MotionDetector
-from .facedetector import FaceDetector
 from .recorder import Recorder
 from .streamer import set_frame, set_status, run_server
 from .usbwatcher import USBWatcher
 from .config import (FLASK_HOST, FLASK_PORT, FRAME_WIDTH, FRAME_HEIGHT,
                       FPS, FPS_ACTIVE, FPS_IDLE, USB_CHECK_INTERVAL,
-                      RECORDINGS_DIR, DISK_MIN_FREE_MB, FACE_DETECT_EVERY_N)
+                      RECORDINGS_DIR)
 
 
 def _storage_available():
@@ -43,14 +42,11 @@ def main():
 
     camera = Camera()
     detector = MotionDetector()
-    face_detector = FaceDetector()
     recorder = Recorder()
     usb = USBWatcher(mount_point="/mnt/usb", check_interval=USB_CHECK_INTERVAL)
     usb.start()
     camera_ok = True
     current_fps = FPS_IDLE
-    frame_counter = 0
-    last_faces = []
 
     server_thread = threading.Thread(
         target=run_server,
@@ -75,7 +71,7 @@ def main():
                 face_mode=recorder._face_mode,
                 free_mb=free_mb,
                 fps=current_fps,
-                face_count=len(last_faces),
+                face_count=0,
             )
             time.sleep(2)
 
@@ -123,17 +119,10 @@ def main():
                 if motion:
                     recorder.signal_motion()
                     current_fps = FPS_ACTIVE
-                    frame_counter += 1
-                    if frame_counter % FACE_DETECT_EVERY_N == 0:
-                        last_faces = face_detector.detect(frame)
-                    face_detector.draw(frame, last_faces)
-                    if last_faces:
-                        recorder.signal_face()
                 elif recorder.recording:
                     pass
                 else:
                     current_fps = FPS_IDLE
-                    last_faces = []
                 recorder.write_frame(frame)
                 recorder.check_timeout()
             else:
@@ -154,7 +143,7 @@ def main():
                 face_mode=recorder._face_mode,
                 free_mb=free_mb,
                 fps=current_fps,
-                face_count=len(last_faces),
+                face_count=0,
             )
 
             time.sleep(1.0 / current_fps)
